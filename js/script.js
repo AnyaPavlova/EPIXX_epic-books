@@ -65,3 +65,5 @@ function ready (fn) {
     document.addEventListener('DOMContentLoaded', fn);
   }
 }
+
+// этот комментарий сделан, чтобы понять как работают ветки
