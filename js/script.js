@@ -75,6 +75,9 @@ ready(function(){
       allPrice += sum;
     }
     document.querySelector('#cart-products-price-num').innerText = `${allPrice} ₽`;
+
+    let checkoutPrice = document.querySelector('.checkout__price');
+    checkoutPrice.innerText = `${allPrice} ₽`;
   }
 
   //Заполнение товаров
@@ -126,6 +129,24 @@ ready(function(){
     }
     orderPrice();
   };
+  //Изменение кол-ва единиц товара
+  function changeProduct(event) {
+    const eventTarget = event.target;
+    if( eventTarget.classList.contains('field-num__input') ) {
+      let valueInput = +(eventTarget.value);
+      if( valueInput===0 ) {
+        eventTarget.value = 1;
+        alert('Количество не может быть меньше 1');
+      }
+      else if( valueInput > 10 ) {
+        eventTarget.value = 10;
+        alert('Количество не может быть больше 10');
+      }
+      else {
+        orderPrice();
+      }
+    }
+  };
   //Удаление товара
   function deleteProduct(el) {
     let parent = el.closest('.cart__product');
@@ -150,25 +171,7 @@ ready(function(){
   //Отслеживаем клик по корзине
   const card = document.querySelector('.cart');
   card.addEventListener('click', cardClick);
-  card.addEventListener('change', changeProduct);
-
-  function changeProduct(event) {
-    const eventTarget = event.target;
-    if( eventTarget.classList.contains('field-num__input') ) {
-      let valueInput = +(eventTarget.value);
-      if( valueInput===0 ) {
-        eventTarget.value = 1;
-        alert('Количество не может быть меньше 1');
-      }
-      else if( valueInput > 10 ) {
-        eventTarget.value = 10;
-        alert('Количество не может быть больше 10');
-      }
-      else {
-        orderPrice();
-      }
-    }
-  }
+  card.addEventListener('change', changeProduct);  
 
    //Удаление корзины по клику "Очистить корзину"
    let btnDeleteAll = document.querySelector('.cart__clear-btn')
