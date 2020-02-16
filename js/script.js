@@ -1,5 +1,8 @@
-ready(function(){
+  ready(function(){
   // В этом месте должен быть написан ваш код
+
+  const isCartPage = document.querySelector('.cart');  // выполняем наш код только если на странице есть корзина
+  if(isCartPage) {
 
   //массив товаров
   const productsArr = [
@@ -26,7 +29,8 @@ ready(function(){
   //сумма товаров
   function counSumProducts() { 
     const cartSumProduct = document.querySelector('#cart-sum-product');    
-    cartSumProduct.innerText = document.querySelectorAll('.cart__product').length;
+    const topcasrtSumprosuct = document.querySelector('.page-header__cart-num');
+    topcasrtSumprosuct.innerText = cartSumProduct.innerText = document.querySelectorAll('.cart__product').length;    
   } 
 
   //Вспомогательная функция - разметка товара
@@ -64,6 +68,7 @@ ready(function(){
    };
 
   //Сумма заказа
+  let promotionalCodeDiscount = 0; //здесь будет храниться скидка по промокоду
   function orderPrice() {
     const productsList = document.querySelectorAll('.cart__product');
     let allPrice = 0;
@@ -76,8 +81,8 @@ ready(function(){
     }
     document.querySelector('#cart-products-price-num').innerText = `${allPrice} ₽`;
 
-    let checkoutPrice = document.querySelector('.checkout__price');
-    checkoutPrice.innerText = `${allPrice} ₽`;
+    let checkoutPrice = document.querySelector('.checkout__price');    
+    checkoutPrice.innerText = `${allPrice - promotionalCodeDiscount} ₽`;
   }
 
   //Заполнение товаров
@@ -153,10 +158,9 @@ ready(function(){
     parent.remove();
     orderPrice();
     counSumProducts();
-  }
+  };
   //Функция проверки по чему был клик и вызова последующих функций
   function cardClick(event) {
-    event.preventDefault;
     const eventTarget = event.target;
     if( eventTarget.classList.contains('field-num__btn-minus') ) {
       reduceSum(eventTarget);
@@ -167,7 +171,7 @@ ready(function(){
     if( eventTarget.classList.contains('cart__product-del-btn') ) {
       deleteProduct(eventTarget);
     }
-  }
+  };
   //Отслеживаем клик по корзине
   const card = document.querySelector('.cart');
   card.addEventListener('click', cardClick);
@@ -177,11 +181,91 @@ ready(function(){
    let btnDeleteAll = document.querySelector('.cart__clear-btn')
    btnDeleteAll.addEventListener('click', deleteAllProducts);
    function deleteAllProducts(event) {
-    event.preventDefault;
+    event.preventDefault();
     const eventTarget = event.target;
     let productsTab = eventTarget.closest('.cart');
     productsTab.replaceWith('Ваша корзина пуста');
+   };
+
+   //Проверка заполнения полей
+   function fillingСheck(event) {
+    event.preventDefault();
+    const eventTarget = event.target;
+    const userInput = document.querySelectorAll('.checkout__user-data .field-text__input');
+      for( let item of  userInput) {
+        if( item.value == "" ) {
+          item.closest('.field-text').classList.add('field-text--error');
+        }
+      }
+   };
+   function fillStatus(event) {
+    const eventTarget = event.target;
+    let check = eventTarget.closest('.field-text').classList;
+    if( check.contains('field-text--error') ){
+      check.remove('field-text--error');
+    }
+   };
+
+   const submitBtn = document.querySelector('.field-actions .btn');
+   submitBtn.addEventListener('click', fillingСheck);
+   const userInfo = document.querySelector('.checkout__user-data');
+   userInfo.addEventListener('change', fillStatus);
+
+   /*В зависимости от способа доставки показываем ту или иную инф.*/
+   const checkDelivery = document.querySelectorAll('.field-radio__input[name=delivery]');
+   for(let item of checkDelivery) {
+    item.addEventListener('change', choiseDelivery);
    }
+   function choiseDelivery(event) {
+    const eventTarget = event.target;
+    let value = eventTarget.value;    
+
+    const allDelivery = document.querySelectorAll('.cart__delivery'); //сначала ищем активный элемент и скрываем его
+    for(let item of allDelivery) {
+      if( !(item.classList.contains('cart__delivery--hidden')) ) {
+        item.classList.add('cart__delivery--hidden');
+      }
+    }
+    switch(value) { //в зависимости от значения выбираем ту или иную инф. для показа
+      case "1":
+        document.querySelector('#cart-delivery-1').classList.remove('cart__delivery--hidden');
+        break;
+      case "2":
+        document.querySelector('#cart-delivery-2').classList.remove('cart__delivery--hidden');
+        break;
+      case "3":
+        document.querySelector('#cart-delivery-3').classList.remove('cart__delivery--hidden');
+        break;
+      default: 
+        break;
+    }
+   };
+
+   /*Промокод*/   
+   const promotionalCode = document.querySelector('input[name=promocode]');
+   promotionalCode.addEventListener('change', changePromotionalCode);
+
+   function changePromotionalCode(event) {
+      const eventTarget = event.target;
+       let classPromocode = eventTarget.closest('.field-text--promocode').classList;
+      if( eventTarget.value.toUpperCase() === 'EPIXX' ) {       
+        if( classPromocode.contains('field-text--input-error') ) {
+          classPromocode.remove('field-text--input-error');
+        }
+        classPromocode.add('field-text--input-checked');
+        document.querySelector('.checkout__discount').classList.remove('checkout__discount--hidden');
+        promotionalCodeDiscount = 150;
+      }
+      else {
+        classPromocode.add('field-text--input-error');
+        document.querySelector('.checkout__discount').classList.add('checkout__discount--hidden');
+        promotionalCodeDiscount = 0;
+      }
+      orderPrice(); //Пересчитаем сумму
+   };
+
+
+  };   
 
   // ВНИМАНИЕ!
   // Нижеследующий код (кастомный селект и выбор диапазона цены) работает

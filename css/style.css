@@ -372,6 +372,9 @@ a.btn--disabled {
   font-weight: 900; }
 .checkout__discount {
   font-size: 14px; }
+  .checkout__discount--hidden {
+    display: none;
+  }
 .checkout__discount-num {
   display: inline-block;
   margin-left: 25px;
