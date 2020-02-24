@@ -1,6 +1,8 @@
 ready(function () {
   // В этом месте должен быть написан ваш код
 
+  // ***Общие функции для реиспользования***
+
   //Изменение кол-ва единиц в input по клику на +/-
   function changeValueInputByButton(el) {
     let parent = el.closest('.field-num');
@@ -20,10 +22,13 @@ ready(function () {
       fieldNum.value = newCount;
     } else if (newCount < minNum) {
       alert(`Количество не может быть меньше ${minNum}`);
+      newCount = minNum;
     }
     else if (newCount > maxNum) {
       alert(`Количество не может быть больше ${maxNum}`);
+      newCount = maxNum;
     }
+    return newCount;
   }
   //Изменение кол-ва единиц в input по заполнению
   function changeValueInput(el) {
@@ -38,9 +43,7 @@ ready(function () {
       el.value = maxNum;
       alert(`Количество не может быть больше ${maxNum}`);
     }
-    else {
-      return true;
-    }
+    return +el.value;
   }
 
   //Валидация формы (проверка, что обязательный поля не пустые)
@@ -62,6 +65,8 @@ ready(function () {
       check.remove('field-text--error');
     }
   };
+
+  // ***Код для корзины***
 
   const isCartPage = document.querySelector('.cart');  // выполняем наш код только если на странице есть корзина
   if (isCartPage) {
@@ -87,13 +92,6 @@ ready(function () {
         count: 1
       },
     ];
-
-    //сумма товаров
-    function counSumProducts() {
-      const cartSumProduct = document.querySelector('#cart-sum-product');
-      const headerBasketSumProducts = document.querySelector('.page-header__cart-num');
-      headerBasketSumProducts.innerText = cartSumProduct.innerText = document.querySelectorAll('.cart__product').length;
-    }
 
     //Вспомогательная функция - разметка товара
     function createProduct(name, count, img, price) {
@@ -129,23 +127,7 @@ ready(function () {
       return newProduct; //Вернули новый узел
     };
 
-    //Сумма заказа
     let promotionalCodeDiscount = 0; //здесь будет храниться скидка по промокоду
-    function orderPrice() {
-      const productsList = document.querySelectorAll('.cart__product');
-      let allPrice = 0;
-
-      for (let item of productsList) {
-        let price = +(item.querySelector('.cart__item-price').innerText);
-        let count = +(item.querySelector('.field-num__input').value);
-        let sum = price * count;
-        allPrice += sum;
-      }
-      document.querySelector('#cart-products-price-num').innerText = `${allPrice} ₽`;
-
-      let checkoutPrice = document.querySelector('.checkout__price');
-      checkoutPrice.innerText = `${allPrice - promotionalCodeDiscount} ₽`;
-    }
 
     //Заполнение товаров
     function fillingProducts(arr) {
@@ -156,30 +138,78 @@ ready(function () {
         productsTab.after(product); //Добавили на странцу
       }
 
-      counSumProducts(); //Поменяли кол-во товаров
+      countSumProducts(); //Поменяли кол-во товаров
       orderPrice(); //Посчтитали сумму
     }
     fillingProducts(productsArr);
 
+    //сумма товаров
+    function countSumProducts() {
+      const cartSumProduct = document.querySelector('#cart-sum-product');
+      const headerBasketSumProducts = document.querySelector('.page-header__cart-num');
+      headerBasketSumProducts.innerText = cartSumProduct.innerText = productsArr.length;
+    }
+
+    //Сумма заказа
+    function orderPrice() {
+      let allPrice = 0;
+      productsArr.forEach(function (item) {
+        let sum = item.price * item.count;
+        allPrice += sum;
+      });
+
+      document.querySelector('#cart-products-price-num').innerText = `${allPrice} ₽`;
+      let checkoutPrice = document.querySelector('.checkout__price');
+      checkoutPrice.innerText = `${allPrice - promotionalCodeDiscount} ₽`;
+    }
+
+    // ***Доп. функции для работы с массивом книг***
+
+    //Поиск карточки товара (по потомку) в разметке
+    function findCard(element) {
+      return element.closest('.cart__product');
+    }
+    //Поиск в массиве книг конкретной книги с нужным названием
+    function findCardInArr(element) {
+      let productName = findCard(element).querySelector('.cart__item-name').innerText; //название книги и html
+      let productIndex = 0; //индекс
+      productsArr.forEach(function (item, index) {  //проверяем значение в массиве         
+        if (item.name === productName) {
+          productIndex = index;
+        }
+      })
+      return productIndex;
+    }
+    //Изменение кол-ва книг в массиве
+    function changeContnInArr(element, newCount) {
+      let indexInArr = findCardInArr(element);
+      productsArr[indexInArr].count = newCount;
+      orderPrice();
+    }
+
+    // ***Функции для работы с товарами***
+
     //Изменение кол-ва единиц товара по клику на +/-
     function changeSumGoodsBtn(element) {
-      changeValueInputByButton(element);
-      orderPrice();
+      let amount = changeValueInputByButton(element); //новое значение input
+      changeContnInArr(element, amount);
     }
     //Изменение кол-ва единиц товара
     function changeSumGoodsInput(event) {
       const eventTarget = event.target;
       if (eventTarget.classList.contains('field-num__input')) {
-        changeValueInput(eventTarget);
-        orderPrice();
+        let amount = changeValueInput(eventTarget); //новое значение input
+        changeContnInArr(eventTarget, amount);
       }
     };
     //Удаление товара
     function deleteProduct(el) {
-      let parent = el.closest('.cart__product');
+      let parent = findCard(el);
       parent.remove();
+      let indexInArr = findCardInArr(el);
+      productsArr.splice(indexInArr, 1);
       orderPrice();
-      counSumProducts();
+      countSumProducts();
     };
     //Функция проверки по чему был клик и вызова последующих функций
     function cardClick(event) {
@@ -202,9 +232,13 @@ ready(function () {
     function deleteAllProducts(event) {
       event.preventDefault();
       const eventTarget = event.target;
+      productsArr.splice(0, productsArr.length);
+      countSumProducts();
       let productsTab = eventTarget.closest('.cart');
       productsTab.replaceWith('Ваша корзина пуста');
     };
+
+    // ***Функции для работы с формой***
 
     // Проверка формы
     const submitBtn = document.querySelector('.field-actions .btn');
@@ -258,6 +292,7 @@ ready(function () {
 
 
   };
+  // ***End Код для корзины***
 
   // ВНИМАНИЕ!
   // Нижеследующий код (кастомный селект и выбор диапазона цены) работает
