@@ -127,7 +127,8 @@ ready(function () {
       return newProduct; //Вернули новый узел
     };
 
-    let promotionalCodeDiscount = 0; //здесь будет храниться скидка по промокоду
+    let promotionalCodeDiscount = 0; //здесь будет храниться скидка по промокоду`
+    let deliveryPrice = 0; //цена доставки
 
     //Заполнение товаров
     function fillingProducts(arr) {
@@ -160,7 +161,7 @@ ready(function () {
 
       document.querySelector('#cart-products-price-num').innerText = `${allPrice} ₽`;
       let checkoutPrice = document.querySelector('.checkout__price');
-      checkoutPrice.innerText = `${allPrice - promotionalCodeDiscount} ₽`;
+      checkoutPrice.innerText = `${allPrice - promotionalCodeDiscount + deliveryPrice} ₽`;
     }
 
     // ***Доп. функции для работы с массивом книг***
@@ -229,13 +230,18 @@ ready(function () {
     //Удаление корзины по клику "Очистить корзину"
     let btnDeleteAll = document.querySelector('.cart__clear-btn')
     btnDeleteAll.addEventListener('click', deleteAllProducts);
+
     function deleteAllProducts(event) {
       event.preventDefault();
       const eventTarget = event.target;
       productsArr.splice(0, productsArr.length);
       countSumProducts();
-      let productsTab = eventTarget.closest('.cart');
-      productsTab.replaceWith('Ваша корзина пуста');
+      let productsTab = eventTarget.closest('.cart form');
+
+      let newDiv = document.createElement('div');
+      newDiv.classList.add('cart__inner');
+      newDiv.innerHTML = "<div class='cart__header'><p class='cart__title'>Ваша корзина пуста</p></div>";
+      productsTab.replaceWith(newDiv);
     };
 
     // ***Функции для работы с формой***
@@ -247,29 +253,45 @@ ready(function () {
     const userInfo = document.querySelector('.checkout__user-data');
     userInfo.addEventListener('change', fillStatusInput);
 
-    /*В зависимости от способа доставки показываем ту или иную инф.*/
+    //**В зависимости от способа доставки показываем ту или иную инф.**//
     const checkDelivery = document.querySelectorAll('.field-radio__input[name=delivery]');
     for (let item of checkDelivery) {
       item.addEventListener('change', choiseDelivery);
     }
+    //Ф-ция поиска текущего активного способа доставки
+    function searchCurrentDelivery() {
+      const allDelivery = document.querySelectorAll('.cart__delivery'); 
+      for (let item of allDelivery) {
+        if (!(item.classList.contains('cart__delivery--hidden'))) {
+          return item;
+        }
+      }
+    }
+    //Ф-ция подсчета стоимости доставки
+    function calculationDeliveryPrice() {
+      let currentDeliveryPrice = searchCurrentDelivery().querySelector('.cart__delivery-price'); //находим в текущем способе доставки блок с ценой
+      deliveryPrice = currentDeliveryPrice ? parseInt(currentDeliveryPrice.innerText) : 0;
+      orderPrice();
+    }    
+    calculationDeliveryPrice();
+
+    //Ф-ция по смене активного блока доставки
     function choiseDelivery(event) {
       const eventTarget = event.target;
       let value = eventTarget.value;
 
-      const allDelivery = document.querySelectorAll('.cart__delivery'); //сначала ищем активный элемент и скрываем его
-      for (let item of allDelivery) {
-        if (!(item.classList.contains('cart__delivery--hidden'))) {
-          item.classList.add('cart__delivery--hidden');
-        }
-      }
+      item = searchCurrentDelivery(); //ищем старый активный способ доставки
+      item.classList.add('cart__delivery--hidden'); //скрываем его
 
       let newActiveDeliveryID = `#cart-delivery-${value}`;
       document.querySelector(newActiveDeliveryID).classList.remove('cart__delivery--hidden');
+
+      calculationDeliveryPrice(); //меняем цену доставки
     };
 
     /*Промокод*/
     const promotionalCode = document.querySelector('input[name=promocode]');
-    promotionalCode.addEventListener('change', changePromotionalCode);
+    promotionalCode.addEventListener('keyup', changePromotionalCode);
 
     function changePromotionalCode(event) {
       const eventTarget = event.target;
@@ -285,7 +307,11 @@ ready(function () {
       else {
         classPromocode.add('field-text--input-error');
         document.querySelector('.checkout__discount').classList.add('checkout__discount--hidden');
+        classPromocode.contains('field-text--input-checked') ? classPromocode.remove('field-text--input-checked') : false ;
         promotionalCodeDiscount = 0;
+      }
+      if (eventTarget.value.length === 0) {
+        classPromocode.remove('field-text--input-error');
       }
       orderPrice(); //Пересчитаем сумму
     };
