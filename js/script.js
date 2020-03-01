@@ -15,10 +15,10 @@ ready(function () {
       change = +step;
     }
     let newCount = +fieldNum.value + change;
-    fieldNum.value = newCount;    
+    fieldNum.value = newCount;
 
     //создаем событие изменения значения field-num__input - чтобы не дублировать условия изменения input
-    var numInputChange = new Event('change', {bubbles: true, cancelable: true});     
+    var numInputChange = new Event('change', { bubbles: true, cancelable: true });
     fieldNum.dispatchEvent(numInputChange); //вызываем событие
   }
   //Изменение кол-ва единиц в input по заполнению
@@ -34,7 +34,7 @@ ready(function () {
       el.value = maxNum;
       alert(`Количество не может быть больше ${maxNum}`);
     }
-    var inputNumberChangeEvent = new Event('input-number-change', {bubbles: true, cancelable: true}); //создаем событие 'input-number-change'
+    var inputNumberChangeEvent = new Event('input-number-change', { bubbles: true, cancelable: true }); //создаем событие 'input-number-change'
     el.dispatchEvent(inputNumberChangeEvent); //вызываем срабатывание события
   }
 
@@ -49,7 +49,7 @@ ready(function () {
       }
     }
   };
-  //Проверка заполнения input при его изменении - если ранее был навешен класс ошибки - убираем его
+  //Проверка заполнения input при снятия фокуса с него - если ранее был навешен класс ошибки - убираем его
   function fillStatusInput(event) {
     const eventTarget = event.target;
     let check = eventTarget.closest('.field-text').classList;
@@ -61,23 +61,23 @@ ready(function () {
   document.addEventListener('click', whatClick);
   function whatClick(event) {
     let eventTarget = event.target
-    if( (eventTarget.classList.contains('field-num__btn-minus')) || (eventTarget.classList.contains('field-num__btn-plus')) ) {
+    if ((eventTarget.classList.contains('field-num__btn-minus')) || (eventTarget.classList.contains('field-num__btn-plus'))) {
       changeValueInputByButton(eventTarget);
     }
-    if( eventTarget.type === "submit" ) {
+    if (eventTarget.type === "submit") {
       validateForm(event);
     }
-  } 
+  }
   document.addEventListener('change', whatChange);
   function whatChange(event) {
     let eventTarget = event.target
-    if( eventTarget.classList.contains('field-num__input') ) {
+    if (eventTarget.classList.contains('field-num__input')) {
       changeValueInput(eventTarget);
     }
-    if( eventTarget.classList.contains('field-text__input') ) {
+    if (eventTarget.classList.contains('field-text__input')) {
       fillStatusInput(event);
     }
-  } 
+  }
 
   // ***Код для корзины***
 
@@ -86,24 +86,24 @@ ready(function () {
 
     //массив товаров
     const productsArr = [
-    {
-      name: 'Гарри Поттер',
-      img: 'img/4223.jpg',
-      price: 1100,
-      count: 1
-    },
-    {
-      name: 'Алиса в стране чудес',
-      img: 'img/100023075889b0.jpg',
-      price: 1000,
-      count: 2
-    },
-    {
-      name: 'Охотники за головами',
-      img: 'img/cover.jpg',
-      price: 500,
-      count: 1
-    },
+      {
+        name: 'Гарри Поттер',
+        img: 'img/4223.jpg',
+        price: 1100,
+        count: 1
+      },
+      {
+        name: 'Алиса в стране чудес',
+        img: 'img/100023075889b0.jpg',
+        price: 1000,
+        count: 2
+      },
+      {
+        name: 'Охотники за головами',
+        img: 'img/cover.jpg',
+        price: 500,
+        count: 1
+      },
     ];
 
     //Вспомогательная функция - разметка товара
@@ -152,8 +152,8 @@ ready(function () {
         productsTab.after(product); //Добавили на странцу
       }
 
-      countSumProducts(); //Поменяли кол-во товаров
-      orderPrice(); //Посчтитали сумму
+      countSumProducts(); //Посчитали кол-во товаров и вывели его на страницу
+      orderPrice(); //Посчтитали сумму заказа и вывели ее на страницу
     }
     fillingProducts(productsArr);
 
@@ -207,7 +207,7 @@ ready(function () {
 
     //Изменение кол-ва единиц товара по клику на +/-
     document.addEventListener('input-number-change', changeCountnInArr);
-    
+
     //Удаление товара
     function deleteProduct(el) {
       let parent = findCard(el);
@@ -220,12 +220,12 @@ ready(function () {
 
     //Функция проверки по чему был клик и вызова последующих функций
     function cardClick(event) {
-      const eventTarget = event.target;      
+      const eventTarget = event.target;
       if (eventTarget.classList.contains('cart__product-del-btn')) {
         deleteProduct(eventTarget);
       }
     };
-    //Отслеживаем клик по корзине    
+    //Отслеживаем клик по блоку с классом cart
     const card = document.querySelector('.cart');
     card.addEventListener('click', cardClick);
 
@@ -249,13 +249,14 @@ ready(function () {
     // ***Функции для работы с формой***   
 
     //**В зависимости от способа доставки показываем ту или иную инф.**//
-    const checkDelivery = document.querySelectorAll('.field-radio__input[name=delivery]');
+    // const checkDelivery = document.querySelectorAll('.field-radio__input[name=delivery]');
+    const checkDelivery = document.querySelectorAll('.form__fieldset');
     for (let item of checkDelivery) {
       item.addEventListener('change', choiseDelivery);
     }
     //Ф-ция поиска текущего активного способа доставки
     function searchCurrentDelivery() {
-      const allDelivery = document.querySelectorAll('.cart__delivery'); 
+      const allDelivery = document.querySelectorAll('.cart__delivery');
       for (let item of allDelivery) {
         if (!(item.classList.contains('cart__delivery--hidden'))) {
           return item;
@@ -267,21 +268,24 @@ ready(function () {
       let currentDeliveryPrice = searchCurrentDelivery().querySelector('.cart__delivery-price'); //находим в текущем способе доставки блок с ценой
       deliveryPrice = currentDeliveryPrice ? parseInt(currentDeliveryPrice.innerText) : 0;
       orderPrice();
-    }    
+    }
     calculationDeliveryPrice();
 
     //Ф-ция по смене активного блока доставки
     function choiseDelivery(event) {
       const eventTarget = event.target;
-      let value = eventTarget.value;
 
-      item = searchCurrentDelivery(); //ищем старый активный способ доставки
-      item.classList.add('cart__delivery--hidden'); //скрываем его
+      if (eventTarget.name === 'delivery') {
+        let value = eventTarget.value;
 
-      let newActiveDeliveryID = `#cart-delivery-${value}`;
-      document.querySelector(newActiveDeliveryID).classList.remove('cart__delivery--hidden');
+        item = searchCurrentDelivery(); //ищем старый активный способ доставки
+        item.classList.add('cart__delivery--hidden'); //скрываем его
 
-      calculationDeliveryPrice(); //меняем цену доставки
+        let newActiveDeliveryID = `#cart-delivery-${value}`;
+        document.querySelector(newActiveDeliveryID).classList.remove('cart__delivery--hidden');
+
+        calculationDeliveryPrice(); //меняем цену доставки
+      }
     };
 
     /*Промокод*/
@@ -302,7 +306,7 @@ ready(function () {
       else {
         classPromocode.add('field-text--input-error');
         document.querySelector('.checkout__discount').classList.add('checkout__discount--hidden');
-        classPromocode.contains('field-text--input-checked') ? classPromocode.remove('field-text--input-checked') : false ;
+        classPromocode.contains('field-text--input-checked') ? classPromocode.remove('field-text--input-checked') : false;
         promotionalCodeDiscount = 0;
       }
       if (eventTarget.value.length === 0) {
