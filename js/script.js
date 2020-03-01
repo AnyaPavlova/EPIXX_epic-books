@@ -8,27 +8,18 @@ ready(function () {
     let parent = el.closest('.field-num');
     let fieldNum = parent.querySelector('.field-num__input');
     let change = 0; //изменение
-    let minNum = +fieldNum.min || 1; //минимальное значение
-    let maxNum = +fieldNum.max || Infinity; //максимальное значение
     let step = +fieldNum.step || 1; //шаг
     if (el.classList.contains('field-num__btn-minus')) {
       change = -step;
     } else if (el.classList.contains('field-num__btn-plus')) {
       change = +step;
     }
-    let count = +fieldNum.value;
-    let newCount = count + change;
-    if ((newCount >= minNum) && (newCount <= maxNum)) {
-      fieldNum.value = newCount;
-    } else if (newCount < minNum) {
-      alert(`Количество не может быть меньше ${minNum}`);
-      newCount = minNum;
-    }
-    else if (newCount > maxNum) {
-      alert(`Количество не может быть больше ${maxNum}`);
-      newCount = maxNum;
-    }
-    return newCount;
+    let newCount = +fieldNum.value + change;
+    fieldNum.value = newCount;    
+
+    //создаем событие изменения значения field-num__input - чтобы не дублировать условия изменения input
+    var numInputChange = new Event('change', {bubbles: true, cancelable: true});     
+    fieldNum.dispatchEvent(numInputChange); //вызываем событие
   }
   //Изменение кол-ва единиц в input по заполнению
   function changeValueInput(el) {
@@ -43,7 +34,8 @@ ready(function () {
       el.value = maxNum;
       alert(`Количество не может быть больше ${maxNum}`);
     }
-    return +el.value;
+    var inputNumberChangeEvent = new Event('input-number-change', {bubbles: true, cancelable: true}); //создаем событие 'input-number-change'
+    el.dispatchEvent(inputNumberChangeEvent); //вызываем срабатывание события
   }
 
   //Валидация формы (проверка, что обязательный поля не пустые)
@@ -66,6 +58,27 @@ ready(function () {
     }
   };
 
+  document.addEventListener('click', whatClick);
+  function whatClick(event) {
+    let eventTarget = event.target
+    if( (eventTarget.classList.contains('field-num__btn-minus')) || (eventTarget.classList.contains('field-num__btn-plus')) ) {
+      changeValueInputByButton(eventTarget);
+    }
+    if( eventTarget.type === "submit" ) {
+      validateForm(event);
+    }
+  } 
+  document.addEventListener('change', whatChange);
+  function whatChange(event) {
+    let eventTarget = event.target
+    if( eventTarget.classList.contains('field-num__input') ) {
+      changeValueInput(eventTarget);
+    }
+    if( eventTarget.classList.contains('field-text__input') ) {
+      fillStatusInput(event);
+    }
+  } 
+
   // ***Код для корзины***
 
   const isCartPage = document.querySelector('.cart');  // выполняем наш код только если на странице есть корзина
@@ -73,24 +86,24 @@ ready(function () {
 
     //массив товаров
     const productsArr = [
-      {
-        name: 'Гарри Поттер',
-        img: 'img/4223.jpg',
-        price: 1100,
-        count: 1
-      },
-      {
-        name: 'Алиса в стране чудес',
-        img: 'img/100023075889b0.jpg',
-        price: 1000,
-        count: 2
-      },
-      {
-        name: 'Охотники за головами',
-        img: 'img/cover.jpg',
-        price: 500,
-        count: 1
-      },
+    {
+      name: 'Гарри Поттер',
+      img: 'img/4223.jpg',
+      price: 1100,
+      count: 1
+    },
+    {
+      name: 'Алиса в стране чудес',
+      img: 'img/100023075889b0.jpg',
+      price: 1000,
+      count: 2
+    },
+    {
+      name: 'Охотники за головами',
+      img: 'img/cover.jpg',
+      price: 500,
+      count: 1
+    },
     ];
 
     //Вспомогательная функция - разметка товара
@@ -99,30 +112,30 @@ ready(function () {
       newProduct.classList.add('cart__product'); //добавили класс
       //добавили содержимое
       let newProductHtml = `<td class="cart__col-1">
-                  <img class="cart__item-img" src="${img}" alt="${name}">
-                </td>
-                <td class="cart__col-2">
-                  <div class="cart__item-name">${name}</div>
-                </td>
-                <td class="cart__col-3">
-                  <div class="field-num  field-num--bg-tran">
-                    <span class="field-num__input-wrap">
-                      <button class="field-num__btn-minus" type="button">-</button>
-                      <input class="field-num__input" type="number" value="${count}" step="1" min="1" max="10"/>
-                      <button class="field-num__btn-plus" type="button">+</button>
-                    </span>
-                  </div>
-                </td>
-                <td class="cart__col-4">
-                  <span class="cart__item-price">${price}</span>
-                </td>
-                <td class="cart__col-5">
-                  <button class="close cart__product-del-btn" type="button">
-                    <svg width="16" height="16">
-                      <use xlink:href="#close"></use>
-                    </svg>
-                  </button>
-                </td>`;
+      <img class="cart__item-img" src="${img}" alt="${name}">
+      </td>
+      <td class="cart__col-2">
+      <div class="cart__item-name">${name}</div>
+      </td>
+      <td class="cart__col-3">
+      <div class="field-num  field-num--bg-tran">
+      <span class="field-num__input-wrap">
+      <button class="field-num__btn-minus" type="button">-</button>
+      <input class="field-num__input" type="number" value="${count}" step="1" min="1" max="10"/>
+      <button class="field-num__btn-plus" type="button">+</button>
+      </span>
+      </div>
+      </td>
+      <td class="cart__col-4">
+      <span class="cart__item-price">${price}</span>
+      </td>
+      <td class="cart__col-5">
+      <button class="close cart__product-del-btn" type="button">
+      <svg width="16" height="16">
+      <use xlink:href="#close"></use>
+      </svg>
+      </button>
+      </td>`;
       newProduct.innerHTML = newProductHtml;     //добавили в узел HTML
       return newProduct; //Вернули новый узел
     };
@@ -182,8 +195,10 @@ ready(function () {
       return productIndex;
     }
     //Изменение кол-ва книг в массиве
-    function changeContnInArr(element, newCount) {
-      let indexInArr = findCardInArr(element);
+    function changeCountnInArr(event) {
+      let elementTarget = event.target;
+      let indexInArr = findCardInArr(elementTarget); //получим индекс измененного элемента    
+      let newCount = elementTarget.value;
       productsArr[indexInArr].count = newCount;
       orderPrice();
     }
@@ -191,18 +206,8 @@ ready(function () {
     // ***Функции для работы с товарами***
 
     //Изменение кол-ва единиц товара по клику на +/-
-    function changeSumGoodsBtn(element) {
-      let amount = changeValueInputByButton(element); //новое значение input
-      changeContnInArr(element, amount);
-    }
-    //Изменение кол-ва единиц товара
-    function changeSumGoodsInput(event) {
-      const eventTarget = event.target;
-      if (eventTarget.classList.contains('field-num__input')) {
-        let amount = changeValueInput(eventTarget); //новое значение input
-        changeContnInArr(eventTarget, amount);
-      }
-    };
+    document.addEventListener('input-number-change', changeCountnInArr);
+    
     //Удаление товара
     function deleteProduct(el) {
       let parent = findCard(el);
@@ -212,20 +217,17 @@ ready(function () {
       orderPrice();
       countSumProducts();
     };
+
     //Функция проверки по чему был клик и вызова последующих функций
     function cardClick(event) {
-      const eventTarget = event.target;
-      if ((eventTarget.classList.contains('field-num__btn-minus')) || (eventTarget.classList.contains('field-num__btn-plus'))) {
-        changeSumGoodsBtn(eventTarget);
-      }
+      const eventTarget = event.target;      
       if (eventTarget.classList.contains('cart__product-del-btn')) {
         deleteProduct(eventTarget);
       }
     };
-    //Отслеживаем клик по корзине
+    //Отслеживаем клик по корзине    
     const card = document.querySelector('.cart');
     card.addEventListener('click', cardClick);
-    card.addEventListener('change', changeSumGoodsInput);
 
     //Удаление корзины по клику "Очистить корзину"
     let btnDeleteAll = document.querySelector('.cart__clear-btn')
@@ -244,14 +246,7 @@ ready(function () {
       productsTab.replaceWith(newDiv);
     };
 
-    // ***Функции для работы с формой***
-
-    // Проверка формы
-    const submitBtn = document.querySelector('.field-actions .btn');
-    submitBtn.addEventListener('click', validateForm);
-
-    const userInfo = document.querySelector('.checkout__user-data');
-    userInfo.addEventListener('change', fillStatusInput);
+    // ***Функции для работы с формой***   
 
     //**В зависимости от способа доставки показываем ту или иную инф.**//
     const checkDelivery = document.querySelectorAll('.field-radio__input[name=delivery]');
@@ -343,16 +338,16 @@ ready(function () {
           item: (classNames, data) => {
             return template(`
               <div class="${classNames.item} ${data.highlighted ? classNames.highlightedState : classNames.itemSelectable}" data-item data-id="${data.id}" data-value="${data.value}" ${data.active ? 'aria-selected="true"' : ''} ${data.disabled ? 'aria-disabled="true"' : ''}>
-                ${getLangInSelectIcon(data.value)} ${data.label.substr(0, 3)}
+              ${getLangInSelectIcon(data.value)} ${data.label.substr(0, 3)}
               </div>
-            `);
+              `);
           },
           choice: (classNames, data) => {
             return template(`
               <div class="${classNames.item} ${classNames.itemChoice} ${data.disabled ? classNames.itemDisabled : classNames.itemSelectable}" data-select-text="${this.config.itemSelectText}" data-choice ${data.disabled ? 'data-choice-disabled aria-disabled="true"' : 'data-choice-selectable'} data-id="${data.id}" data-value="${data.value}" ${data.groupId > 0 ? 'role="treeitem"' : 'role="option"'}>
-                ${getLangInSelectIcon(data.value)} ${data.label}
+              ${getLangInSelectIcon(data.value)} ${data.label}
               </div>
-            `);
+              `);
           },
         };
       }
