@@ -135,7 +135,7 @@
         <section class="cart">
           <form class="form cart__inner">
             <header class="cart__header">
-              <h1 class="cart__title">В корзине 99992 товара</h1>
+              <h1 class="cart__title">В корзине <span id="cart-sum-product">999</span> товара</h1>
               <button class="btn  btn--text cart__clear-btn" type="button">Очистить корзину</button>
             </header>
             <table class="cart__table">
@@ -146,7 +146,7 @@
                 <th class="cart__col-4">Цена</th>
                 <th class="cart__col-5"></th>
               </tr>
-              <tr class="cart__product">
+              <!-- <tr class="cart__product">
                 <td class="cart__col-1">
                   <img class="cart__item-img" src="img/tsennye-resheniya.jpg" alt="Ценные решения">
                 </td>
@@ -172,8 +172,8 @@
                     </svg>
                   </button>
                 </td>
-              </tr>
-              <tr class="cart__product">
+              </tr> -->
+              <!-- <tr class="cart__product">
                 <td class="cart__col-1">
                   <img class="cart__item-img" src="img/tsennye-resheniya.jpg" alt="Ценные решения">
                 </td>
@@ -199,7 +199,7 @@
                     </svg>
                   </button>
                 </td>
-              </tr>
+              </tr> -->
               <tr>
                 <td class="cart__products-price" colspan="5">
                   Итого к оплате: <strong class="cart__products-price-num" id="cart-products-price-num">2 200 ₽</strong>
@@ -214,25 +214,25 @@
                   <label class="field-text  field-text--bg-gray">
                     <span class="field-text__name">Имя</span>
                     <span class="field-text__input-wrap">
-                      <input class="field-text__input" type="text" name="firstname" placeholder="Иван"/>
+                      <input class="field-text__input" type="text" name="firstname" placeholder="Иван" required/>
                     </span>
                   </label>
                   <label class="field-text  field-text--bg-gray">
                     <span class="field-text__name">Фамилия</span>
                     <span class="field-text__input-wrap">
-                      <input class="field-text__input" type="text" name="lastname" placeholder="Помидоров"/>
+                      <input class="field-text__input" type="text" name="lastname" placeholder="Помидоров" required/>
                     </span>
                   </label>
                   <label class="field-text  field-text--bg-gray">
                     <span class="field-text__name">Телефон</span>
                     <span class="field-text__input-wrap">
-                      <input class="field-text__input" type="tel" name="phone" placeholder="+7 812 000 00 00"/>
+                      <input class="field-text__input" type="tel" name="phone" placeholder="+7 812 000 00 00" required/>
                     </span>
                   </label>
                   <label class="field-text  field-text--bg-gray">
                     <span class="field-text__name">E-mail</span>
                     <span class="field-text__input-wrap">
-                      <input class="field-text__input" type="email" name="name" placeholder="user@mail.com"/>
+                      <input class="field-text__input" type="email" name="name" placeholder="user@mail.com" required/>
                     </span>
                   </label>
                 </div>
@@ -272,6 +272,7 @@
                     </div>
                   </div>
                   <div class="checkout__map" id="checkout-map">map place</div>
+                  <div>Стоимость доставки в пункт выдачи: <strong class="cart__delivery-price">50 ₽</strong></div>
                 </div>
                 <div class="cart__delivery cart__delivery--hidden" id="cart-delivery-2">
                   <div class="cart__courier-data">
@@ -363,13 +364,13 @@
                   </div>
                 </div>
                 <!-- field-text--input-error для ошибочного состояния поля с промокодом-->
-                <label class="field-text  field-text--bg-gray field-text--promocode field-text--input-checked cart__promocode">
+                <label class="field-text  field-text--bg-gray field-text--promocode  cart__promocode">
                   <span class="field-text__name">Промокод</span>
                   <span class="field-text__input-wrap">
-                    <input class="field-text__input" type="text" value="CORRECT_CODE" name="promocode"/>
+                    <input class="field-text__input" type="text" value="" name="promocode"/>
                   </span>
                 </label>
-                <p class="checkout__discount">
+                <p class="checkout__discount checkout__discount--hidden">
                   Скидка: <strong class="checkout__discount-num" id="checkout-discount-num">- 150 ₽</strong>
                 </p>
               </fieldset>
